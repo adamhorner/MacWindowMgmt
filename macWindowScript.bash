@@ -10,6 +10,9 @@
 # If no screen seems to own the window, then move it to the appropriate edge
 # on the main screen (screen 0).
 
+# TODO: change the parameter parsing so that it can multiple parameters instead
+# of one single concatenated parameter, this would allow arbitrary ordering
+
 #DEBUG_MODE=1
 
 if [[ "${DEBUG_MODE}" ]]; then
@@ -30,6 +33,8 @@ declare -r SIZE_STRING='Display Size: '
 declare -r LOCATIONS="TOP BOTTOM RIGHT LEFT TOPRIGHT TOPLEFT BOTTOMRIGHT BOTTOMLEFT CENTER CENTERTOP CENTERLEFT CENTERBOTTOM CENTERRIGHT NEXT NEXTTOP NEXTBOTTOM NEXTRIGHT NEXTLEFT NEXTTOPRIGHT NEXTTOPLEFT NEXTBOTTOMRIGHT NEXTBOTTOMLEFT NEXTCENTER NEXTCENTERTOP NEXTCENTERLEFT NEXTCENTERBOTTOM NEXTCENTERRIGHT"
 # the height of the Apple Menu Bar
 declare -r MENU_BAR_HEIGHT=22
+# How close to the edge of the monitor do we consider being at the edge?
+declare -r EDGE_BUFFER=15
 declare -r WINDOW_LOC="$1"
 # These get set read-only later on
 declare WINDOW_X
@@ -212,9 +217,9 @@ else
     NEW_Y="${WINDOW_Y}"
 fi
 
-# work out where to move the window to
+# work out where to move the window to #{{{
 NEW_LOC="${WINDOW_LOC}"
-if [[ "$NEW_LOC}" =~ "NEXT" ]]; then
+if [[ "${NEW_LOC}" =~ "NEXT" ]]; then
     if [[ "${NEW_LOC}" == "NEXT" ]]; then
         # if no other position is specified, try and be clever about location
         TOPOFFSET=$((${WINDOW_Y}-${SCREEN_TOP[${ACTIVE_SCREEN}]}-${MENU_BAR_HEIGHT}))
@@ -222,16 +227,16 @@ if [[ "$NEW_LOC}" =~ "NEXT" ]]; then
         LEFTOFFSET=$((${WINDOW_X}-${SCREEN_LEFT[${ACTIVE_SCREEN}]}))
         RIGHTOFFSET=$((${WINDOW_X}+${WINDOW_WIDTH}-${SCREEN_RIGHT[${ACTIVE_SCREEN}]}))
         debug DEBUG "Window offsets calculated as (${TOPOFFSET}, ${BOTTOMOFFSET}, ${LEFTOFFSET}, ${RIGHTOFFSET})"
-        if [[ ${TOPOFFSET} -gt -10 && ${TOPOFFSET} -lt 10 ]]; then
+        if [[ ${TOPOFFSET} -gt -${EDGE_BUFFER} && ${TOPOFFSET} -lt ${EDGE_BUFFER} ]]; then
             NEW_LOC="TOP"
-        elif [[ ${BOTTOMOFFSET} -gt -10 && ${BOTTOMOFFSET} -lt 10 ]]; then
+        elif [[ ${BOTTOMOFFSET} -gt -${EDGE_BUFFER} && ${BOTTOMOFFSET} -lt ${EDGE_BUFFER} ]]; then
             NEW_LOC="BOTTOM"
         else
             NEW_LOC="CENTER"
         fi
-        if [[ ${LEFTOFFSET} -gt -10 && ${LEFTOFFSET} -lt 10 ]]; then
+        if [[ ${LEFTOFFSET} -gt -${EDGE_BUFFER} && ${LEFTOFFSET} -lt ${EDGE_BUFFER} ]]; then
             NEW_LOC+="LEFT"
-        elif [[ ${RIGHTOFFSET} -gt -10 && ${RIGHTOFFSET} -lt 10 ]]; then
+        elif [[ ${RIGHTOFFSET} -gt -${EDGE_BUFFER} && ${RIGHTOFFSET} -lt ${EDGE_BUFFER} ]]; then
             NEW_LOC+="RIGHT"
         elif [[ "${NEW_LOC}" != "CENTER" ]]; then
             NEW_LOC+="CENTER"
@@ -260,6 +265,7 @@ fi
 if [[ "${NEW_LOC}" =~ "BOTTOM" ]]; then
     NEW_Y=$((${SCREEN_BOTTOM[${ACTIVE_SCREEN}]}-${WINDOW_HEIGHT}))
 fi
+# end of calculations #}}}
 
 # move the front-most window
 ./moveWindow.scpt "${NEW_X}" "${NEW_Y}"
