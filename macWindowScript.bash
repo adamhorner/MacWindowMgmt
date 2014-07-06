@@ -30,12 +30,11 @@ declare -r IDENTITY_STRING='Screen ID: '
 declare -r POSITION_STRING='Global Position: '
 declare -r SIZE_STRING='Display Size: '
 # list of valid possible window locations
-declare -r LOCATIONS="TOP BOTTOM RIGHT LEFT TOPRIGHT TOPLEFT BOTTOMRIGHT BOTTOMLEFT CENTER CENTERTOP CENTERLEFT CENTERBOTTOM CENTERRIGHT NEXT NEXTTOP NEXTBOTTOM NEXTRIGHT NEXTLEFT NEXTTOPRIGHT NEXTTOPLEFT NEXTBOTTOMRIGHT NEXTBOTTOMLEFT NEXTCENTER NEXTCENTERTOP NEXTCENTERLEFT NEXTCENTERBOTTOM NEXTCENTERRIGHT"
+declare -r LOCATIONS="TOP BOTTOM RIGHT LEFT CENTER NEXT"
 # the height of the Apple Menu Bar
 declare -r MENU_BAR_HEIGHT=22
 # How close to the edge of the monitor do we consider being at the edge?
 declare -r EDGE_BUFFER=15
-declare -r WINDOW_LOC="$1"
 # These get set read-only later on
 declare WINDOW_X
 declare WINDOW_Y
@@ -45,6 +44,7 @@ declare WINDOW_HEIGHT
 
 # Variables #{{{
 declare SCREENSRESULT
+declare WINDOW_LOC
 declare -i SCREEN_COUNT=-1
 declare -i -a SCREEN_ID
 declare -i -a SCREEN_LEFT
@@ -74,18 +74,20 @@ echoerr() {
 
 # function to print usage instructions
 usage() {
-    echoerr "USAGE: ${ME} <LOC>"
+    echoerr "USAGE: ${ME} <LOC> [<LOC> ...]"
     echoerr " ${ME} provides co-ordinates to move a window to the desired edge"
     echoerr "    of the current monitor, tested on Mavericks (OS X 10.9) only"
-    echoerr " <LOC>: the desired location of the window, must be one of:"
-    echoerr "     ${LOCATIONS}"
+    echoerr " <LOC>: one or more of the desired location of the window, from:"
+    echoerr "    ${LOCATIONS}"
     echoerr " OUTPUT: NEWX NEWY"
 }
 
 debug() {
     local LEVEL="${1}"
     shift
-    if [[ "${DEBUG}" =~ "${LEVEL}" ]]; then
+    if [[ "${LEVEL}" == "ERROR" ]]; then
+        echo "$@"
+    elif [[ "${DEBUG}" =~ "${LEVEL}" ]]; then
         echoerr -e "${LEVEL}:\t${ME}#${FUNCNAME[1]}:\t$@"
     fi
 }
@@ -121,11 +123,24 @@ assertInt() {
     exit 2
 }
 
-#
+# function to add a parameter to the desired window location
+addWindowLocation() {
+    # $1: parameter to add to the window locations variable
+    if [[ "${LOCATIONS}" =~ $1 ]]; then
+        WINDOW_LOC="${WINDOW_LOC}$1"
+        debug DEBUG "Added $1 to WINDOW_LOC"
+    else
+        debug ERROR "Invalid location ($1)"
+        usage
+        exit 2
+    fi
+}
 
 # End of functions #}}}
 
 # Main execution #{{{
+
+debug DEBUG "Parameters($#): $@"
 
 # get the location of the front-most window
 read WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT <<< $(./printWindowXYWH.scpt)
@@ -136,7 +151,7 @@ declare -r WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT
 
 # Check number of parameters
 if [[ $# -lt 1 ]]; then
-    debug ERROR "parameter required"
+    debug ERROR "parameter(s) required"
     usage
     exit 2
 fi
@@ -146,13 +161,17 @@ assertInt "X" "${WINDOW_X}"
 assertInt "Y" "${WINDOW_Y}"
 assertInt "W" "${WINDOW_WIDTH}" "YES"
 assertInt "H" "${WINDOW_HEIGHT}" "YES"
-if [[ "${LOCATIONS}" =~ ${WINDOW_LOC} ]]; then
-    debug DEBUG "Location is set to ${WINDOW_LOC}"
-else
-    debug ERROR "Invalid location specified (${WINDOW_LOC})"
-    usage
-    exit 2
-fi
+while [[ $# -gt 0 ]]; do
+    if [[ "$1" =~ " " ]]; then
+        for word in $1; do
+            addWindowLocation ${word}
+        done
+    else
+        addWindowLocation $1
+    fi
+    shift
+done
+debug INFO "Location to be set to ${WINDOW_LOC}"
 
 # parameters are all good #}}}
 

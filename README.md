@@ -59,35 +59,14 @@ using your keyboard shortcut and type "top", "left", "right", "bottom" to move
 your current window to that edge of its current monitor. The underlying script
 allows more complication motions, for example it is possible to move the current
 window to the centre-right edge of the next monitor by activating Alfred and
-type "move nextcenterright".
+type `move next center right`.
 
-The general rule is that you need to specify the keywords in 'priority' order in
-a valid combination. These are the valid combinations (case doesn't matter):
+Specify any of the following valid keywords (case doesn't matter), in any order
+after the 'move' keyword.
 
 - TOP
 - BOTTOM
 - RIGHT
 - LEFT
-- TOPRIGHT
-- TOPLEFT
-- BOTTOMRIGHT
-- BOTTOMLEFT
 - CENTER
-- CENTERTOP
-- CENTERLEFT
-- CENTERBOTTOM
-- CENTERRIGHT
 - NEXT
-- NEXTTOP
-- NEXTBOTTOM
-- NEXTRIGHT
-- NEXTLEFT
-- NEXTTOPRIGHT
-- NEXTTOPLEFT
-- NEXTBOTTOMRIGHT
-- NEXTBOTTOMLEFT
-- NEXTCENTER
-- NEXTCENTERTOP
-- NEXTCENTERLEFT
-- NEXTCENTERBOTTOM
-- NEXTCENTERRIGHT
