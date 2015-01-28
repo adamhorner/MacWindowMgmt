@@ -143,7 +143,7 @@ addWindowLocation() {
 debug DEBUG "Parameters($#): $@"
 
 # get the location of the front-most window
-read WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT <<< $(./printWindowXYWH.scpt)
+read WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT <<< $(/usr/bin/osascript printWindowXYWH.scpt)
 # set the window variables to constants
 declare -r WINDOW_X WINDOW_Y WINDOW_WIDTH WINDOW_HEIGHT
 
@@ -287,6 +287,6 @@ fi
 # end of calculations #}}}
 
 # move the front-most window
-./moveWindow.scpt "${NEW_X}" "${NEW_Y}"
+/usr/bin/osascript moveWindow.scpt "${NEW_X}" "${NEW_Y}"
 
 # End #}}}
