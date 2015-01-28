@@ -1,7 +1,7 @@
 # Mac Window Management for Alfred
 
 This project helps with window management on a mac, leveraging the power of the
-[Alfred Power Pack][app].
+[Alfred Power Pack][app] and [Alfred Remote][remote].
 
 The intention is to help you move a window to the edge of the current display
 without resizing the window. It also helps with moving the window to the next
@@ -11,6 +11,7 @@ display as well as centring[^1] windows in the display.
 centre), whereas the code is written in American English (e.g. center).
 
 [app]: http://www.alfredapp.com/powerpack/
+[remote]: http://www.alfredapp.com/remote/
 
 # Setup
 
@@ -51,6 +52,14 @@ to use the alternative key combination shown beneath each one.
 
 Once the keyboard shortcuts are set up then moving windows around the monitor(s)
 (without resizing them) is simply a matter of using the hotkeys as configured.
+
+It is also easy to set up a remote page as part of the workflow, simply add the
+suggested page from the Window Snap workflow in the remotes tab, here is what it
+looks like on the author's iPhone:
+
+![Alfred Remote][ri]
+
+[ri]: https://bitbucket.org/repo/zAg8Eq/images/2277048358-IMG_2340.PNG
 
 # Advanced usage
 
