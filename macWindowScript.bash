@@ -10,9 +10,6 @@
 # If no screen seems to own the window, then move it to the appropriate edge
 # on the main screen (screen 0).
 
-# TODO: change the parameter parsing so that it can multiple parameters instead
-# of one single concatenated parameter, this would allow arbitrary ordering
-
 #DEBUG_MODE=1
 
 if [[ "${DEBUG_MODE}" ]]; then
@@ -31,8 +28,14 @@ declare -r POSITION_STRING='Global Position: '
 declare -r SIZE_STRING='Display Size: '
 # list of valid possible window locations
 declare -r LOCATIONS="TOP BOTTOM RIGHT LEFT CENTER NEXT"
+declare -r DARWIN_VERSION=$(uname -r)
 # the height of the Apple Menu Bar
-declare -r MENU_BAR_HEIGHT=22
+if [[ "${DARWIN_VERSION%%.*}" -ge 15 ]]; then
+    # We're on Mac OS El Capitan (10.11) or greater, menu bar can be hidden
+    declare -r MENU_BAR_HEIGHT=0
+else
+    declare -r MENU_BAR_HEIGHT=22
+fi
 # How close to the edge of the monitor do we consider being at the edge?
 declare -r EDGE_BUFFER=15
 # These get set read-only later on
