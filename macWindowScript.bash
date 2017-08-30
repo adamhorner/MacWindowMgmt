@@ -266,7 +266,7 @@ if [[ "${NEW_LOC}" =~ "NEXT" ]]; then
         debug DEBUG "NEW_LOC set to ${NEW_LOC}"
     fi
     # move window to the next screen
-    ACTIVE_SCREEN+=1
+    ACTIVE_SCREEN=$((${ACTIVE_SCREEN}+1))
     if [[ ${ACTIVE_SCREEN} -gt ${SCREEN_COUNT} ]]; then
         ACTIVE_SCREEN=0
     fi
