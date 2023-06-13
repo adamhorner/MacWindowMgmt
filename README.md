@@ -7,7 +7,7 @@ The intention is to help you move a window to the edge of the current display
 without resizing the window. It also helps with moving the window to the next
 display as well as centring[^1] windows in the display.
 
-[^1]: You will note that the documentation is written in British English (e.g.
+[^1]: Note that the documentation is written in British English (e.g.
 centre), whereas the code is written in American English (e.g. center).
 
 [app]: http://www.alfredapp.com/powerpack/
