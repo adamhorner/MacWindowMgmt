@@ -13,7 +13,7 @@
 #DEBUG_MODE=1
 
 if [[ "${DEBUG_MODE}" ]]; then
-    set -xv
+    #set -xv
     # list of debug levels for which output is created
     declare -r DEBUG="ERROR WARNING INFO DEBUG"
 else
@@ -26,6 +26,7 @@ declare -r SCREENS="./hmscreens -info"
 declare -r IDENTITY_STRING='Screen ID: '
 declare -r POSITION_STRING='Global Position: '
 declare -r SIZE_STRING='Display Size: '
+declare -r CAMERA_HEIGHT_STRING='Camera Housing Height: '
 # list of valid possible window locations
 declare -r LOCATIONS="TOP BOTTOM RIGHT LEFT CENTER NEXT"
 declare -r DARWIN_VERSION=$(uname -r)
@@ -37,7 +38,7 @@ else
     declare -r MENU_BAR_HEIGHT=22
 fi
 # How close to the edge of the monitor do we consider being at the edge?
-declare -r EDGE_BUFFER=15
+declare -r EDGE_BUFFER=30
 # These get set read-only later on
 declare WINDOW_X
 declare WINDOW_Y
@@ -54,6 +55,7 @@ declare -i -a SCREEN_LEFT
 declare -i -a SCREEN_TOP
 declare -i -a SCREEN_WIDTH
 declare -i -a SCREEN_HEIGHT
+declare -i -a SCREEN_MENUBAR_HEIGHT
 declare -i -a SCREEN_RIGHT
 declare -i -a SCREEN_BOTTOM
 declare -i -a SCREEN_CENTER_X
@@ -181,11 +183,13 @@ debug INFO "Location to be set to ${WINDOW_LOC}"
 WINDOW_CENTRE_X=$((${WINDOW_X} + ${WINDOW_WIDTH}/2))
 WINDOW_CENTRE_Y=$((${WINDOW_Y} + ${WINDOW_HEIGHT}/2))
 
+debug INFO "Window location is at ${WINDOW_X}, ${WINDOW_Y}"
 debug INFO "Window centre is at ${WINDOW_CENTRE_X}, ${WINDOW_CENTRE_Y}"
 
 # loop to find the screen dimensions #{{{
 # Note that this uses a variety of bash's text wrangling, see 'man bash'
 while read SCREENLINE; do
+    debug DEBUG "hmscreens: ${SCREENLINE}"
     if [ "${SCREENLINE:0:${#IDENTITY_STRING}}" = "${IDENTITY_STRING}" ]; then
         # Found a new screen, increase count, store ID
         SCREEN_COUNT+=1
@@ -202,6 +206,15 @@ while read SCREENLINE; do
         SIZE=${SCREENLINE#${SIZE_STRING}}
         SCREEN_WIDTH[${SCREEN_COUNT}]=${SIZE/,*/}
         SCREEN_HEIGHT[${SCREEN_COUNT}]=${SIZE/*, /}
+    fi
+    if [ "${SCREENLINE:0:${#CAMERA_HEIGHT_STRING}}" = "${CAMERA_HEIGHT_STRING}" ]; then
+        # Store the size of the camera housing height
+        CAMERA_HEIGHT=${SCREENLINE#${CAMERA_HEIGHT_STRING}}
+        if [[ ${CAMERA_HEIGHT} -gt ${MENU_BAR_HEIGHT} ]]; then
+            SCREEN_MENUBAR_HEIGHT[${SCREEN_COUNT}]=${CAMERA_HEIGHT}
+        else
+            SCREEN_MENUBAR_HEIGHT[${SCREEN_COUNT}]=${MENU_BAR_HEIGHT}
+        fi
     fi
 done < <(${SCREENS})
 # end get screen dimensions #}}}
@@ -230,7 +243,7 @@ done # find active screen loop #}}}
 
 if [[ -z "${ACTIVE_SCREEN}" ]]; then
     debug WARNING "Window is not on a screen, putting it on main display"
-    echo "SETTING TO ZERO ZERO"
+    debug INFO "SETTING TO ZERO ZERO"
     ACTIVE_SCREEN=0
     NEW_X=0
     NEW_Y=0
@@ -244,7 +257,7 @@ NEW_LOC="${WINDOW_LOC}"
 if [[ "${NEW_LOC}" =~ "NEXT" ]]; then
     if [[ "${NEW_LOC}" == "NEXT" ]]; then
         # if no other position is specified, try and be clever about location
-        TOPOFFSET=$((${WINDOW_Y}-${SCREEN_TOP[${ACTIVE_SCREEN}]}-${MENU_BAR_HEIGHT}))
+        TOPOFFSET=$((${WINDOW_Y}-${SCREEN_TOP[${ACTIVE_SCREEN}]}-${SCREEN_MENUBAR_HEIGHT[${ACTIVE_SCREEN}]}))
         BOTTOMOFFSET=$((${WINDOW_Y}+${WINDOW_HEIGHT}-${SCREEN_BOTTOM[${ACTIVE_SCREEN}]}))
         LEFTOFFSET=$((${WINDOW_X}-${SCREEN_LEFT[${ACTIVE_SCREEN}]}))
         RIGHTOFFSET=$((${WINDOW_X}+${WINDOW_WIDTH}-${SCREEN_RIGHT[${ACTIVE_SCREEN}]}))
@@ -267,9 +280,11 @@ if [[ "${NEW_LOC}" =~ "NEXT" ]]; then
     fi
     # move window to the next screen
     ACTIVE_SCREEN=$((${ACTIVE_SCREEN}+1))
+    NEW_LOC+="CENTER"
     if [[ ${ACTIVE_SCREEN} -gt ${SCREEN_COUNT} ]]; then
         ACTIVE_SCREEN=0
     fi
+    debug DEBUG "Moving to screen ${ACTIVE_SCREEN}"
 fi
 if [[ "${NEW_LOC}" =~ "CENTER" ]]; then
     NEW_X=$((${SCREEN_CENTER_X[${ACTIVE_SCREEN}]}-${WINDOW_WIDTH}/2))
@@ -279,7 +294,7 @@ if [[ "${NEW_LOC}" =~ "LEFT" ]]; then
     NEW_X=${SCREEN_LEFT[${ACTIVE_SCREEN}]}
 fi
 if [[ "${NEW_LOC}" =~ "TOP" ]]; then
-    NEW_Y=$((${SCREEN_TOP[${ACTIVE_SCREEN}]}+${MENU_BAR_HEIGHT}))
+    NEW_Y=$((${SCREEN_TOP[${ACTIVE_SCREEN}]}+${SCREEN_MENUBAR_HEIGHT[${ACTIVE_SCREEN}]}))
 fi
 if [[ "${NEW_LOC}" =~ "RIGHT" ]]; then
     NEW_X=$((${SCREEN_RIGHT[${ACTIVE_SCREEN}]}-${WINDOW_WIDTH}))
@@ -290,6 +305,7 @@ fi
 # end of calculations #}}}
 
 # move the front-most window
+debug DEBUG "Moving window to ${NEW_X} ${NEW_Y}"
 /usr/bin/osascript moveWindow.scpt "${NEW_X}" "${NEW_Y}"
 
 # End #}}}
