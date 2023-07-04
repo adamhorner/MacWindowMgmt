@@ -15,7 +15,7 @@ centre), whereas the code is written in American English (e.g. center).
 
 # Setup
 
-- Download `Window Snap.alfredworkflow` from the [Downloads][dl] page
+- Download `Window Snap.alfredworkflow` from the [releases][dl] page
 - double click it to install the workflow in Alfred
 - setup the hotkeys (Alfred removes these on installation of a workflow for your
   safety).
@@ -45,8 +45,8 @@ to use the alternative key combination shown beneath each one.
 
 ![Hot Keys configured in Alfred][hk]
 
-[dl]: https://bitbucket.org/adamhorner/macwindowmgmt/downloads
-[hk]: https://bitbucket.org/repo/zAg8Eq/images/1802463211-hotkeys.png
+[dl]: https://github.com/adamhorner/MacWindowMgmt/releases
+[hk]: images/hotkeys.png
 
 # Usage
 
@@ -59,7 +59,7 @@ looks like on the author's iPhone:
 
 ![Alfred Remote][ri]
 
-[ri]: https://bitbucket.org/repo/zAg8Eq/images/2277048358-IMG_2340.PNG
+[ri]: images/iphone_remote.png
 
 # Advanced usage
 
@@ -68,7 +68,11 @@ using your keyboard shortcut and type "top", "left", "right", "bottom" to move
 your current window to that edge of its current monitor. The underlying script
 allows more complication motions, for example it is possible to move the current
 window to the centre-right edge of the next monitor by activating Alfred and
-type `move next center right`.
+typing
+
+```
+move next center right
+```
 
 Specify any of the following valid keywords (case doesn't matter), in any order
 after the 'move' keyword.
